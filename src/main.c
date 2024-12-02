@@ -60,12 +60,12 @@ uint64_t hash = hashmap_hash(key, hashmap->size);
     table->entries[index].key = (char*)malloc(strlen(key));
     strcpy(table->entries[index].key, key);
     table->entries[index].data = data; 
+    printf("\nAdded element to hashmap\n{\tkey: %s,\n\tdata: %s\n}", (char*)(data), key);
     }
 }
 
 void *hashmap_search(char *key, hashmap_t *hashmap){
     uint64_t index = hashmap_hash(key, hashmap->size);
-    printf("%lu", index);
     hashmap_table_t *table = &hashmap->table[index];
     if(table->entries == NULL || table->collisions==0){
         return NULL;
@@ -73,7 +73,6 @@ void *hashmap_search(char *key, hashmap_t *hashmap){
 
     for(int i=0;i<table->collisions; i++){
         if(!strcmp(key, table->entries[i].key)){
-            printf("%s", (char*)(table->entries[i].data));
             return table->entries[i].data;
         }
     }
@@ -109,6 +108,7 @@ void hashmap_resize(hashmap_t *hashmap, size_t new_size, size_t new_collisions){
 
 int main(void){
     hashmap_t *hashmap = hashmap_create(250, 5);
+    printf("table size: %ld\n", hashmap->size);
     hashmap_insert("teste0", "0", hashmap);
     hashmap_insert("teste1", "1", hashmap);
     hashmap_insert("teste2", "2", hashmap);
@@ -119,6 +119,8 @@ int main(void){
     hashmap_insert("teste7", "7", hashmap);
     hashmap_insert("teste8", "8", hashmap);
     hashmap_insert("teste9", "9", hashmap);
+
+    printf("\nfound: %s\n", (char*)(hashmap_search("teste5", hashmap)));
 
     return 0;
 }
