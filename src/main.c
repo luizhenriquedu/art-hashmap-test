@@ -20,6 +20,9 @@ typedef struct{
 
 } hashmap_t;
 
+void hashmap_resize(hashmap_t *hashmap, size_t new_size , size_t new_collisions);
+
+
 hashmap_t *hashmap_create(uint64_t size, size_t max_collisions){
     hashmap_t *map = (hashmap_t*)malloc(sizeof(hashmap_t));
     map->table = (hashmap_table_t*)malloc(sizeof(map->table) * size);
@@ -40,22 +43,29 @@ uint64_t hashmap_hash(char *key, size_t size){
 }
 
 void hashmap_insert(char *key, void *data, hashmap_t *hashmap){
-    uint64_t hash = hashmap_hash(key, hashmap->size);
+    start: {
+uint64_t hash = hashmap_hash(key, hashmap->size);
     hashmap_table_t *table = &hashmap->table[hash];
     if(table->entries == NULL || table->collisions == 0){
         table->entries = (hashmap_entry_t*)malloc(sizeof(table->entries) * hashmap->max_collisions);
         memset(table->entries, 0, sizeof(table->entries) * hashmap->max_collisions);
         table->collisions = 0;
     }
+    if (table->collisions == hashmap->max_collisions) {
+    hashmap_resize(hashmap, hashmap->size + 50, hashmap->max_collisions + 30);
+    goto start;
+  }
 
     uint64_t index = table->collisions++;
     table->entries[index].key = (char*)malloc(strlen(key));
     strcpy(table->entries[index].key, key);
     table->entries[index].data = data; 
+    }
 }
 
 void *hashmap_search(char *key, hashmap_t *hashmap){
     uint64_t index = hashmap_hash(key, hashmap->size);
+    printf("%lu", index);
     hashmap_table_t *table = &hashmap->table[index];
     if(table->entries == NULL || table->collisions==0){
         return NULL;
@@ -63,12 +73,13 @@ void *hashmap_search(char *key, hashmap_t *hashmap){
 
     for(int i=0;i<table->collisions; i++){
         if(!strcmp(key, table->entries[i].key)){
+            printf("%s", (char*)(table->entries[i].data));
             return table->entries[i].data;
         }
     }
 }
 
-hashmap_t *hashmap_resize(hashmap_t *hashmap, size_t new_size, size_t new_collisions){
+void hashmap_resize(hashmap_t *hashmap, size_t new_size, size_t new_collisions){
     hashmap_table_t *new_table = (hashmap_table_t*)malloc(sizeof(hashmap_table_t) * new_size);
     hashmap->max_collisions = new_collisions;
     
@@ -97,16 +108,17 @@ hashmap_t *hashmap_resize(hashmap_t *hashmap, size_t new_size, size_t new_collis
 }
 
 int main(void){
-    hashmap_t *hashmap = hashmap_create(30, 5);
-    hashmap_resize(hashmap, 40, 5);
-    hashmap_insert("teste1", "123", hashmap);
-    hashmap_insert("teste2", "1234", hashmap);
-    hashmap_insert("teste3", "12345", hashmap);
-    hashmap_insert("teste4", "123456", hashmap);
-    hashmap_insert("teste5", "1234567", hashmap);
-    hashmap_insert("teste6", "12345678", hashmap);
-    printf("%ld", hashmap->size);
-    printf("%s", (char*)hashmap_search("teste1", hashmap));
+    hashmap_t *hashmap = hashmap_create(250, 5);
+    hashmap_insert("teste0", "0", hashmap);
+    hashmap_insert("teste1", "1", hashmap);
+    hashmap_insert("teste2", "2", hashmap);
+    hashmap_insert("teste3", "3", hashmap);
+    hashmap_insert("teste4", "4", hashmap);
+    hashmap_insert("teste5", "5", hashmap);
+    hashmap_insert("teste6", "6", hashmap);
+    hashmap_insert("teste7", "7", hashmap);
+    hashmap_insert("teste8", "8", hashmap);
+    hashmap_insert("teste9", "9", hashmap);
 
     return 0;
 }
