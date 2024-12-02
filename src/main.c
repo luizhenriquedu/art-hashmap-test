@@ -56,9 +56,32 @@ void hashmap_insert(char *key, void *data, hashmap_t *hashmap){
 
 void *hashmap_search(char *key, hashmap_t *hashmap){
     uint64_t index = hashmap_hash(key, hashmap->size);
+    hashmap_table_t *table = &hashmap->table[index];
+    if(table->entries == NULL || table->collisions==0){
+        return NULL;
+    }
+
+    for(int i=0;i<table->collisions; i++){
+        if(!strcmp(key, table->entries[i].key)){
+            return table->entries[i].data;
+        }
+    }
+}
+
+hashmap_t *hashmap_resize(hashmap_t *hashmap, size_t new_size, size_t new_collisions){
+
 }
 
 int main(void){
     hashmap_t *hashmap = hashmap_create(30, 5);
+    hashmap_insert("teste1", "123", hashmap);
+    hashmap_insert("teste2", "1234", hashmap);
+    hashmap_insert("teste3", "12345", hashmap);
+    hashmap_insert("teste4", "123456", hashmap);
+    hashmap_insert("teste5", "1234567", hashmap);
+    hashmap_insert("teste6", "12345678", hashmap);
+    
+    printf("%s", (char*)hashmap_search("teste1", hashmap));
+
     return 0;
 }
